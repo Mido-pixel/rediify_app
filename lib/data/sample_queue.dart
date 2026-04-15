@@ -1,0 +1,66 @@
+import '../models/now_playing_song.dart';
+
+final List<NowPlayingSong> _queue = [
+  NowPlayingSong(
+    id: '1',
+    title: "Jazz Piano",
+    artist: "Free Music",
+    album: "Samples",
+    genre: "Jazz",
+    duration: "3:00",
+    durationSeconds: 180,
+    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  ),
+  NowPlayingSong(
+    id: '2',
+    title: "Electronic Beat",
+    artist: "Free Music",
+    album: "Samples",
+    genre: "Electronic",
+    duration: "3:30",
+    durationSeconds: 210,
+    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+  ),
+  NowPlayingSong(
+    id: '3',
+    title: "Rock Guitar",
+    artist: "Free Music",
+    album: "Samples",
+    genre: "Rock",
+    duration: "4:00",
+    durationSeconds: 240,
+    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+  ),
+  NowPlayingSong(
+    id: '4',
+    title: "Acoustic Melody",
+    artist: "Free Music",
+    album: "Samples",
+    genre: "Acoustic",
+    duration: "3:45",
+    durationSeconds: 225,
+    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+  ),
+  NowPlayingSong(
+    id: '5',
+    title: "Chill Vibes",
+    artist: "Free Music",
+    album: "Samples",
+    genre: "Chill",
+    duration: "3:15",
+    durationSeconds: 195,
+    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+  ),
+  NowPlayingSong(
+    id: '6',
+    title: "Upbeat Pop",
+    artist: "Free Music",
+    album: "Samples",
+    genre: "Pop",
+    duration: "2:50",
+    durationSeconds: 170,
+    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+  ),
+];
+
+final List<NowPlayingSong> sampleQueue = _queue;
