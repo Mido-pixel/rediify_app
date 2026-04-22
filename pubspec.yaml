@@ -75,12 +75,6 @@ flutter:
       
   assets:
     - assets/images/REdiify.png
-    - assets/audio/Chad Crouch - Essence.mp3
-    - assets/audio/Happy Refugees - Falling For You.mp3
-    - assets/audio/Krestovsky - The Weekend.mp3
-    - assets/audio/Break The Bans - Beautiful and young.mp3
-    - assets/audio/Cletus Got Shot - Fight Song.mp3
-    - assets/audio/Tep - humble.mp3
     - .env
 
 

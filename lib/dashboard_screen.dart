@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // ── Colors ───────────────────────────────────────────────────
 class RColors {
@@ -74,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Image.asset(
                   'assets/images/REdiify.png',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, _, _) => const Icon(
                       Icons.music_note, color: Colors.white, size: 18),
                 ),
               ),
@@ -171,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Rate App Dialog
   void _showRateDialog() {
-    int _stars = 0;
+    int stars = 0;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -188,12 +187,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (i) => GestureDetector(
-                  onTap: () => setS(() => _stars = i + 1),
+                  onTap: () => setS(() => stars = i + 1),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Icon(
-                      i < _stars ? Icons.star : Icons.star_border,
-                      color: i < _stars ? Colors.amber : RColors.textMuted,
+                      i < stars ? Icons.star : Icons.star_border,
+                      color: i < stars ? Colors.amber : RColors.textMuted,
                       size: 36,
                     ),
                   ),
@@ -201,13 +200,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                _stars == 0 ? 'Tap a star' :
-                _stars == 1 ? 'Poor 😞' :
-                _stars == 2 ? 'Fair 😐' :
-                _stars == 3 ? 'Good 🙂' :
-                _stars == 4 ? 'Great 😊' : 'Excellent! 🤩',
+                stars == 0 ? 'Tap a star' :
+                stars == 1 ? 'Poor 😞' :
+                stars == 2 ? 'Fair 😐' :
+                stars == 3 ? 'Good 🙂' :
+                stars == 4 ? 'Great 😊' : 'Excellent! 🤩',
                 style: TextStyle(
-                  color: _stars > 3 ? RColors.green : RColors.textSecondary,
+                  color: stars > 3 ? RColors.green : RColors.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -219,10 +218,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: const Text('Later', style: TextStyle(color: RColors.textSecondary)),
             ),
             ElevatedButton(
-              onPressed: _stars == 0 ? null : () {
+              onPressed: stars == 0 ? null : () {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Thanks for $_stars stars! 🎉'),
+                  content: Text('Thanks for $stars stars! 🎉'),
                   backgroundColor: RColors.green,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

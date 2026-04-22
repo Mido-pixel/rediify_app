@@ -6,7 +6,7 @@ class Song {
   final String id;
   final String title;
   final String artist;
-  final String assetPath;
+  final String fileUrl;        // ✅ changed from assetPath to fileUrl
   final String genre;
   final Color themeColor;
   bool isLiked;
@@ -15,7 +15,7 @@ class Song {
     required this.id,
     required this.title,
     required this.artist,
-    required this.assetPath,
+    required this.fileUrl,     // ✅ updated
     required this.genre,
     required this.themeColor,
     this.isLiked = false,
@@ -26,13 +26,13 @@ class Song {
 class MusicService extends ChangeNotifier {
   final AudioPlayer _player = AudioPlayer();
 
-  // ✅ Matches your actual asset filenames in pubspec.yaml
+  // ✅ Supabase Storage URLs — replace YOUR_PROJECT_REF with yours
   final List<Song> songs = [
     Song(
       id: '1',
       title: 'Essence',
       artist: 'Chad Crouch',
-      assetPath: 'assets/audio/Chad Crouch - Essence.mp3',
+      fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Chad%20Crouch%20-%20Essence.mp3',
       genre: 'Afrobeats',
       themeColor: const Color(0xFFE65100),
       isLiked: true,
@@ -41,7 +41,7 @@ class MusicService extends ChangeNotifier {
       id: '2',
       title: 'Falling For You',
       artist: 'Happy Refugees',
-      assetPath: 'assets/audio/Happy Refugees - Falling For You.mp3',
+      fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Happy%20Refugees%20-%20Falling%20For%20You.mp3',
       genre: 'R&B',
       themeColor: const Color(0xFF1565C0),
     ),
@@ -49,7 +49,7 @@ class MusicService extends ChangeNotifier {
       id: '3',
       title: 'The Weekend',
       artist: 'Krestovsky',
-      assetPath: 'assets/audio/Krestovsky - The Weekend.mp3',
+      fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Krestovsky%20-%20The%20Weekend.mp3',
       genre: 'Pop',
       themeColor: const Color(0xFFB71C1C),
     ),
@@ -57,7 +57,7 @@ class MusicService extends ChangeNotifier {
       id: '4',
       title: 'Beautiful and Young',
       artist: 'Break The Bans',
-      assetPath: 'assets/audio/Break The Bans - Beautiful and young.mp3',
+      fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Break%20The%20Bans%20-%20Beautiful%20and%20young.mp3',
       genre: 'Pop',
       themeColor: const Color(0xFF2E7D32),
     ),
@@ -65,7 +65,7 @@ class MusicService extends ChangeNotifier {
       id: '5',
       title: 'Fight Song',
       artist: 'Cletus Got Shot',
-      assetPath: 'assets/audio/Cletus Got Shot - Fight Song.mp3',
+      fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Cletus%20Got%20Shot%20-%20Fight%20Song.mp3',
       genre: 'Hip Hop',
       themeColor: const Color(0xFF4A148C),
     ),
@@ -73,13 +73,13 @@ class MusicService extends ChangeNotifier {
       id: '6',
       title: 'Humble',
       artist: 'Tep',
-      assetPath: 'assets/audio/Tep - humble.mp3',
+      fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Tep%20-%20humble.mp3',
       genre: 'Hip Hop',
       themeColor: const Color(0xFF00695C),
     ),
   ];
 
-  // ── State ─────────────────────────────────────────────────
+  // ── State ──────────────────────────────────────────────────
   Song?    currentSong;
   int      currentIndex = 0;
   bool     isPlaying    = false;
@@ -95,7 +95,7 @@ class MusicService extends ChangeNotifier {
     _initListeners();
   }
 
-  // ── Listeners ─────────────────────────────────────────────
+  // ── Listeners ──────────────────────────────────────────────
   void _initListeners() {
     _player.playingStream.listen((playing) {
       isPlaying = playing;
@@ -127,17 +127,17 @@ class MusicService extends ChangeNotifier {
     });
   }
 
-  // ── Play Song ─────────────────────────────────────────────
+  // ── Play Song ──────────────────────────────────────────────
   Future<void> playSong(Song song) async {
     try {
-      currentSong   = song;
-      currentIndex  = songs.indexOf(song);
-      isBuffering   = true;
-      errorMessage  = null;
+      currentSong  = song;
+      currentIndex = songs.indexOf(song);
+      isBuffering  = true;
+      errorMessage = null;
       notifyListeners();
 
       await _player.stop();
-      await _player.setAsset(song.assetPath);
+      await _player.setUrl(song.fileUrl);   // ✅ setUrl instead of setAsset
       await _player.play();
     } catch (e) {
       errorMessage = 'Playback failed: $e';
@@ -146,7 +146,7 @@ class MusicService extends ChangeNotifier {
     }
   }
 
-  // ── Controls ──────────────────────────────────────────────
+  // ── Controls ───────────────────────────────────────────────
   Future<void> togglePlayPause() async {
     if (_player.playing) {
       await _player.pause();
@@ -181,21 +181,22 @@ class MusicService extends ChangeNotifier {
     await _player.seek(Duration(milliseconds: ms));
   }
 
+  // ✅ setVolume now also accepts external volume from main.dart
   Future<void> setVolume(double value) async {
     volume = value.clamp(0.0, 1.0);
     await _player.setVolume(volume);
     notifyListeners();
   }
 
-  void toggleShuffle() {
-    isShuffle = !isShuffle;
+  // ✅ Called from main.dart when hardware volume buttons change
+  void syncVolume(double value) {
+    volume = value.clamp(0.0, 1.0);
+    _player.setVolume(volume);
     notifyListeners();
   }
 
-  void toggleRepeat() {
-    isRepeat = !isRepeat;
-    notifyListeners();
-  }
+  void toggleShuffle() { isShuffle = !isShuffle; notifyListeners(); }
+  void toggleRepeat()  { isRepeat  = !isRepeat;  notifyListeners(); }
 
   void toggleLike() {
     if (currentSong != null) {
@@ -204,7 +205,7 @@ class MusicService extends ChangeNotifier {
     }
   }
 
-  // ── Progress helpers ──────────────────────────────────────
+  // ── Progress helpers ───────────────────────────────────────
   double get progress {
     if (duration.inMilliseconds == 0) return 0.0;
     return (position.inMilliseconds / duration.inMilliseconds)

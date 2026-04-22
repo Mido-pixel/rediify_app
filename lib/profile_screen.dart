@@ -107,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: const TextStyle(color: Colors.grey, fontSize: 14)),
             const SizedBox(height: 8),
             Text(bio,
-                style: const TextStyle(color: Color.fromARGB(179, 168, 16, 156), fontSize: 14),
+                style: const TextStyle(color: Color.fromARGB(179, 18, 164, 209), fontSize: 14),
                 textAlign: TextAlign.center),
 
             const SizedBox(height: 24),

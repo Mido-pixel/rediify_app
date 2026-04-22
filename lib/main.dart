@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:volume_controller/volume_controller.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:volume_controller/volume_controller.dart';
 import 'services/music_service.dart';
 // Screens
 import 'login_screen.dart';
@@ -17,19 +16,14 @@ import 'notification_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Load .env
-  await dotenv.load(fileName: '.env');
 
-  // ✅ Init Supabase
   await Supabase.initialize(
-    url:     dotenv.env['https://qhtqkpjgxjzqcpyknebv.supabase.co']!,
-    anonKey: dotenv.env['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodHFrcGpneGp6cWNweWtuZWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNTM1ODYsImV4cCI6MjA5MTcyOTU4Nn0.udCTGKMbHFlJKMaqVklwlBp1x56udhY_164-3nPprvQ']!,
+    url:     'https://qhtqkpjgxjzqcpyknebv.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodHFrcGpneGp6cWNweWtuZWJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNTM1ODYsImV4cCI6MjA5MTcyOTU4Nn0.udCTGKMbHFlJKMaqVklwlBp1x56udhY_164-3nPprvQ',
   );
 
-  // ✅ Hide system volume popup
-  VolumeController().showSystemUI = false;
+  VolumeController().showSystemUI = false;         // ✅ hide system volume popup
 
-  // ✅ Run app with MusicService provided
   runApp(
     ChangeNotifierProvider(
       create: (_) => MusicService(),
@@ -38,14 +32,42 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  double _volume = 0.5;
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Listen for hardware volume button changes
+    VolumeController().listener((volume) {
+      if (mounted) setState(() => _volume = volume);
+    });
+    // ✅ Get current device volume on startup
+    VolumeController().getVolume().then((volume) {
+      if (mounted) setState(() => _volume = volume);
+    });
+  }
+
+  @override
+  void dispose() {
+    VolumeController().removeListener();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'REdiify App',
+
+      // ── App Theme ───────────────────────────────────────────
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF121212),
         colorScheme: const ColorScheme.dark(
@@ -58,8 +80,10 @@ class MyApp extends StatelessWidget {
           thumbColor:         Colors.white,
           overlayColor:       Colors.white12,
           trackHeight:        3,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-          overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+          thumbShape: const RoundSliderThumbShape(
+              enabledThumbRadius: 6),
+          overlayShape: const RoundSliderOverlayShape(
+              overlayRadius: 14),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
@@ -81,7 +105,10 @@ class MyApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
+
       initialRoute: '/login',
+
+      // ── Routes ──────────────────────────────────────────────
       routes: {
         '/login':         (context) => const LoginScreen(),
         '/signup':        (context) => const SignUpScreen(),
@@ -90,7 +117,13 @@ class MyApp extends StatelessWidget {
         '/search':        (context) => const SearchScreen(),
         '/settings':      (context) => const SettingsScreen(),
         '/notifications': (context) => const NotificationsScreen(),
-        '/nowplaying':    (context) => const NowPlayingScreen(),
+        '/nowplaying':    (context) => NowPlayingScreen(   // ✅ passes volume
+              volume: _volume,
+              onVolumeChanged: (v) {
+                setState(() => _volume = v);
+                VolumeController().setVolume(v);
+              },
+            ),
       },
     );
   }

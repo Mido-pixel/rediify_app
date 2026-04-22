@@ -4,7 +4,14 @@ import 'dart:math' as math;
 import 'services/music_service.dart';
 
 class NowPlayingScreen extends StatefulWidget {
-  const NowPlayingScreen({super.key});
+  final double volume;                         // ✅ from main.dart
+  final ValueChanged<double> onVolumeChanged;  // ✅ from main.dart
+
+  const NowPlayingScreen({
+    super.key,
+    required this.volume,
+    required this.onVolumeChanged,
+  });
 
   @override
   State<NowPlayingScreen> createState() => _NowPlayingScreenState();
@@ -26,6 +33,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       vsync: this,
       duration: const Duration(seconds: 3),
     );
+  }
+
+  @override
+  void didUpdateWidget(NowPlayingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // ✅ Sync hardware volume button changes into MusicService
+    if (oldWidget.volume != widget.volume) {
+      context.read<MusicService>().syncVolume(widget.volume);
+    }
   }
 
   @override
@@ -94,10 +110,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       backgroundColor: Colors.black,
       body: Stack(children: [
 
-        // ── Animated background ─────────────────────────────
+        // ── Animated background ────────────────────────────
         AnimatedBuilder(
           animation: _bgPulse,
-          builder: (_, __) => Container(
+          builder: (_, _) => Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -116,9 +132,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
         SafeArea(child: Column(children: [
 
-          // ── Top bar ────────────────────────────────────────
+          // ── Top bar ─────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 8, vertical: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -135,7 +152,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       color: Colors.white70, fontSize: 12)),
                 ]),
                 IconButton(
-                  icon: const Icon(Icons.queue_music, color: Colors.white),
+                  icon: const Icon(Icons.queue_music,
+                      color: Colors.white),
                   onPressed: () => _showQueue(context, music),
                 ),
               ],
@@ -147,7 +165,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             child: Column(children: [
               const SizedBox(height: 16),
 
-              // ── Vinyl disc ──────────────────────────────────
+              // ── Vinyl disc ──────────────────────────────
               AnimatedBuilder(
                 animation: _discRotation,
                 builder: (_, child) => Transform.rotate(
@@ -170,7 +188,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                         shape: BoxShape.circle,
                         color: Colors.black,
                         border: Border.all(
-                            color: themeColor.withOpacity(0.6), width: 2),
+                            color: themeColor.withOpacity(0.6),
+                            width: 2),
                       ),
                       child: Center(child: Container(
                         width: 12, height: 12,
@@ -189,7 +208,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
               const SizedBox(height: 32),
 
-              // ── Song info ───────────────────────────────────
+              // ── Song info ───────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -199,7 +218,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       Text(song.title, style: const TextStyle(
                           color: Colors.white, fontSize: 24,
                           fontWeight: FontWeight.w900),
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       Text(song.artist, style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
@@ -210,7 +230,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     icon: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: Icon(
-                        song.isLiked ? Icons.favorite : Icons.favorite_border,
+                        song.isLiked
+                            ? Icons.favorite
+                            : Icons.favorite_border,
                         key: ValueKey(song.isLiked),
                         color: song.isLiked
                             ? const Color(0xFFE8173A)
@@ -225,7 +247,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
               const SizedBox(height: 24),
 
-              // ── Progress bar ────────────────────────────────
+              // ── Progress bar ────────────────────────────
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor:   Colors.white,
@@ -248,21 +270,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(music.positionLabel, style: const TextStyle(
-                        color: Colors.white60, fontSize: 12)),
-                    Text(music.durationLabel, style: const TextStyle(
-                        color: Colors.white60, fontSize: 12)),
+                    Text(music.positionLabel,
+                        style: const TextStyle(
+                            color: Colors.white60, fontSize: 12)),
+                    Text(music.durationLabel,
+                        style: const TextStyle(
+                            color: Colors.white60, fontSize: 12)),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              // ── Controls ────────────────────────────────────
+              // ── Controls ────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Shuffle
                   GestureDetector(
                     onTap: () => music.toggleShuffle(),
                     child: Container(
@@ -271,19 +294,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           color: themeColor.withOpacity(0.15),
                           shape: BoxShape.circle) : null,
                       child: Icon(Icons.shuffle,
-                          color: music.isShuffle ? themeColor : Colors.white54,
+                          color: music.isShuffle
+                              ? themeColor
+                              : Colors.white54,
                           size: 26),
                     ),
                   ),
-
-                  // Previous
                   GestureDetector(
                     onTap: () => music.playPrevious(),
                     child: const Icon(Icons.skip_previous,
                         color: Colors.white, size: 40),
                   ),
-
-                  // Play/Pause
                   GestureDetector(
                     onTap: () => music.togglePlayPause(),
                     child: Container(
@@ -308,15 +329,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                               color: Colors.black, size: 40),
                     ),
                   ),
-
-                  // Next
                   GestureDetector(
                     onTap: () => music.playNext(),
                     child: const Icon(Icons.skip_next,
                         color: Colors.white, size: 40),
                   ),
-
-                  // Repeat
                   GestureDetector(
                     onTap: () => music.toggleRepeat(),
                     child: Container(
@@ -339,7 +356,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
               const SizedBox(height: 24),
 
-              // ── Volume ──────────────────────────────────────
+              // ── Volume ──────────────────────────────────
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 10),
@@ -352,7 +369,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                       color: Colors.white54, size: 18),
                   Expanded(child: Slider(
                     value: music.volume,
-                    onChanged: (v) => music.setVolume(v),
+                    onChanged: (v) {
+                      music.setVolume(v);           // ✅ update MusicService
+                      widget.onVolumeChanged(v);    // ✅ update main.dart state
+                    },
                   )),
                   const Icon(Icons.volume_up,
                       color: Colors.white54, size: 18),
@@ -361,7 +381,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
               const SizedBox(height: 24),
 
-              // ── Song list (quick switch) ─────────────────────
+              // ── Song list (quick switch) ─────────────────
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text('All Songs', style: TextStyle(
@@ -394,8 +414,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                           ? FontWeight.w800
                           : FontWeight.normal,
                       fontSize: 14)),
-                  subtitle: Text(s.artist, style: const TextStyle(
-                      color: Colors.white54, fontSize: 12)),
+                  subtitle: Text(s.artist,
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 12)),
                   onTap: () => music.playSong(s),
                 );
               }),
@@ -408,12 +429,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     );
   }
 
+  // ── Queue Bottom Sheet ─────────────────────────────────────
   void _showQueue(BuildContext context, MusicService music) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(24))),
       isScrollControlled: true,
       builder: (_) => DraggableScrollableSheet(
         expand: false,
@@ -421,12 +444,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         maxChildSize: 0.9,
         builder: (_, sc) => Column(children: [
           const SizedBox(height: 12),
-          Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2)),
+          ),
           const SizedBox(height: 16),
-          const Text('Queue', style: TextStyle(color: Colors.white,
-              fontSize: 18, fontWeight: FontWeight.w800)),
+          const Text('Queue', style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
           Expanded(child: ListView.builder(
             controller: sc,
@@ -439,10 +467,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   width: 44, height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isCurrent ? s.themeColor : Colors.white12,
+                    color: isCurrent
+                        ? s.themeColor
+                        : Colors.white12,
                   ),
                   child: Icon(
-                    isCurrent ? Icons.graphic_eq : Icons.music_note,
+                    isCurrent
+                        ? Icons.graphic_eq
+                        : Icons.music_note,
                     color: Colors.white, size: 20,
                   ),
                 ),
@@ -451,8 +483,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     fontWeight: isCurrent
                         ? FontWeight.w800
                         : FontWeight.normal)),
-                subtitle: Text(s.artist, style: const TextStyle(
-                    color: Colors.white54)),
+                subtitle: Text(s.artist,
+                    style: const TextStyle(color: Colors.white54)),
                 onTap: () {
                   music.playSong(s);
                   Navigator.pop(context);
@@ -466,7 +498,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   }
 }
 
-// ── Vinyl painter ─────────────────────────────────────────────
+// ── Vinyl painter ──────────────────────────────────────────────
 class _VinylPainter extends CustomPainter {
   final Color color;
   _VinylPainter({required this.color});
@@ -484,7 +516,8 @@ class _VinylPainter extends CustomPainter {
       if (r >= radius) break;
       canvas.drawCircle(center, r,
           Paint()
-            ..color = Colors.white.withOpacity(0.04 + (i % 3) * 0.01)
+            ..color = Colors.white
+                .withOpacity(0.04 + (i % 3) * 0.01)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.2);
     }
@@ -492,16 +525,23 @@ class _VinylPainter extends CustomPainter {
     canvas.drawCircle(center, radius,
         Paint()
           ..shader = RadialGradient(
-            colors: [Colors.white.withOpacity(0.12), Colors.transparent],
+            colors: [
+              Colors.white.withOpacity(0.12),
+              Colors.transparent
+            ],
             center: const Alignment(-0.3, -0.4),
-          ).createShader(Rect.fromCircle(center: center, radius: radius)));
+          ).createShader(
+              Rect.fromCircle(center: center, radius: radius)));
 
     canvas.drawCircle(center, radius * 0.42,
         Paint()
           ..shader = RadialGradient(
-            colors: [color.withOpacity(0.8), color.withOpacity(0.2)],
-          ).createShader(
-              Rect.fromCircle(center: center, radius: radius * 0.42)));
+            colors: [
+              color.withOpacity(0.8),
+              color.withOpacity(0.2)
+            ],
+          ).createShader(Rect.fromCircle(
+              center: center, radius: radius * 0.42)));
 
     canvas.drawCircle(center, radius * 0.42,
         Paint()

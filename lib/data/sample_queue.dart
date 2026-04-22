@@ -1,66 +1,54 @@
-import '../models/now_playing_song.dart';
+import '../services/music_service.dart';
+import 'package:flutter/material.dart';
 
-final List<NowPlayingSong> _queue = [
-  NowPlayingSong(
+final List<Song> sampleQueue = [
+  Song(
     id: '1',
-    title: "Jazz Piano",
-    artist: "Free Music",
-    album: "Samples",
-    genre: "Jazz",
-    duration: "3:00",
-    durationSeconds: 180,
-    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    title: 'Essence',
+    artist: 'Chad Crouch',
+    fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Chad%20Crouch%20-%20Essence.mp3',
+    genre: 'Afrobeats',
+    themeColor: const Color(0xFFE65100),
+    isLiked: true,
   ),
-  NowPlayingSong(
+  Song(
     id: '2',
-    title: "Electronic Beat",
-    artist: "Free Music",
-    album: "Samples",
-    genre: "Electronic",
-    duration: "3:30",
-    durationSeconds: 210,
-    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    title: 'Falling For You',
+    artist: 'Happy Refugees',
+    fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Happy%20Refugees%20-%20Falling%20For%20You.mp3',
+    genre: 'R&B',
+    themeColor: const Color(0xFF1565C0),
   ),
-  NowPlayingSong(
+  Song(
     id: '3',
-    title: "Rock Guitar",
-    artist: "Free Music",
-    album: "Samples",
-    genre: "Rock",
-    duration: "4:00",
-    durationSeconds: 240,
-    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    title: 'The Weekend',
+    artist: 'Krestovsky',
+    fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Krestovsky%20-%20The%20Weekend.mp3',
+    genre: 'Pop',
+    themeColor: const Color(0xFFB71C1C),
   ),
-  NowPlayingSong(
+  Song(
     id: '4',
-    title: "Acoustic Melody",
-    artist: "Free Music",
-    album: "Samples",
-    genre: "Acoustic",
-    duration: "3:45",
-    durationSeconds: 225,
-    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+    title: 'Beautiful and Young',
+    artist: 'Break The Bans',
+    fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Break%20The%20Bans%20-%20Beautiful%20and%20young.mp3',
+    genre: 'Pop',
+    themeColor: const Color(0xFF2E7D32),
   ),
-  NowPlayingSong(
+  Song(
     id: '5',
-    title: "Chill Vibes",
-    artist: "Free Music",
-    album: "Samples",
-    genre: "Chill",
-    duration: "3:15",
-    durationSeconds: 195,
-    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+    title: 'Fight Song',
+    artist: 'Cletus Got Shot',
+    fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Cletus%20Got%20Shot%20-%20Fight%20Song.mp3',
+    genre: 'Hip Hop',
+    themeColor: const Color(0xFF4A148C),
   ),
-  NowPlayingSong(
+  Song(
     id: '6',
-    title: "Upbeat Pop",
-    artist: "Free Music",
-    album: "Samples",
-    genre: "Pop",
-    duration: "2:50",
-    durationSeconds: 170,
-    fileUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+    title: 'Humble',
+    artist: 'Tep',
+    fileUrl: 'https://qhtqkpjgxjzqcpyknebv.supabase.co/storage/v1/object/public/songs/Tep%20-%20humble.mp3',
+    genre: 'Hip Hop',
+    themeColor: const Color(0xFF00695C),
   ),
 ];
-
-final List<NowPlayingSong> sampleQueue = _queue;
