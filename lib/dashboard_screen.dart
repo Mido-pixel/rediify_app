@@ -1,13 +1,9 @@
 // dashboard_screen.dart
-// DashboardScreen is now a route alias → AppShell(initialIndex: 0).
-// DashboardHomeTab is the actual content widget used by AppShell.
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/music_service.dart';
 import 'app_shell.dart';
 
-// ── Colour palette (shared across dashboard widgets) ──────────
 class RColors {
   static const bg            = Color(0xFF121212);
   static const surface       = Color(0xFF1A1A1A);
@@ -22,20 +18,16 @@ class RColors {
   static const textMuted     = Color(0xFF535353);
   static const gradRed = LinearGradient(
     colors: [Color(0xFFE8173A), Color(0xFF7B0D1E)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    begin: Alignment.topLeft, end: Alignment.bottomRight,
   );
 }
 
-// ── Route entry point ─────────────────────────────────────────
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
-
   @override
   Widget build(BuildContext context) => const AppShell(initialIndex: 0);
 }
 
-// ── Home tab body (used by AppShell's IndexedStack) ───────────
 class DashboardHomeTab extends StatelessWidget {
   const DashboardHomeTab({super.key});
 
@@ -51,46 +43,41 @@ class DashboardHomeTab extends StatelessWidget {
     final music = context.watch<MusicService>();
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 160),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildGreetingSection(context),
-          const SizedBox(height: 20),
-          _buildLastSession(context, music),
-          const SizedBox(height: 20),
-          _buildFeaturedBanner(context, music),
-          const SizedBox(height: 24),
-          _sectionHeader('Your Songs — Tap to Play'),
-          const SizedBox(height: 4),
-          _buildSongList(context, music),
-          const SizedBox(height: 24),
-          _sectionHeader('Recently played'),
-          const SizedBox(height: 12),
-          _buildRecentRow(context),
-          const SizedBox(height: 24),
-          _sectionHeader('Made for you'),
-          const SizedBox(height: 12),
-          _buildMixRow(context),
-          const SizedBox(height: 24),
-          _sectionHeader('Trending now'),
-          const SizedBox(height: 4),
-          _buildTrendingList(context),
-          const SizedBox(height: 24),
-          _sectionHeader('New releases'),
-          const SizedBox(height: 12),
-          _buildNewReleasesRow(context),
-        ],
-      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _buildGreetingSection(context),
+        const SizedBox(height: 20),
+        _buildLastSession(context, music),
+        const SizedBox(height: 20),
+        _buildFeaturedBanner(context, music),
+        const SizedBox(height: 24),
+        _sectionHeader('Your Songs — Tap to Play'),
+        const SizedBox(height: 4),
+        _buildSongList(context, music),
+        const SizedBox(height: 24),
+        _sectionHeader('Recently played'),
+        const SizedBox(height: 12),
+        _buildRecentRow(context),
+        const SizedBox(height: 24),
+        _sectionHeader('Made for you'),
+        const SizedBox(height: 12),
+        _buildMixRow(context),
+        const SizedBox(height: 24),
+        _sectionHeader('Trending now'),
+        const SizedBox(height: 4),
+        _buildTrendingList(context),
+        const SizedBox(height: 24),
+        _sectionHeader('New releases'),
+        const SizedBox(height: 12),
+        _buildNewReleasesRow(context),
+      ]),
     );
   }
 
   Widget _sectionHeader(String title) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Text(title,
-            style: const TextStyle(
-                color: RColors.textPrimary,
-                fontSize: 18, fontWeight: FontWeight.w900)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Text(title, style: const TextStyle(
+        color: RColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w900)),
+  );
 
   Widget _buildSongList(BuildContext context, MusicService music) {
     return ListView.builder(
@@ -98,34 +85,36 @@ class DashboardHomeTab extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: music.songs.length,
       itemBuilder: (_, i) {
-        final song = music.songs[i];
+        final song      = music.songs[i];
         final isCurrent = music.currentSong?.id == song.id;
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
             width: 50, height: 50,
             decoration: BoxDecoration(
-              color: isCurrent
-                  ? song.themeColor
-                  : song.themeColor.withOpacity(0.2),
+              color: isCurrent ? song.themeColor : song.themeColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               isCurrent && music.isPlaying ? Icons.graphic_eq : Icons.music_note,
-              color: Colors.white, size: 24,
-            ),
+              color: Colors.white, size: 24),
           ),
           title: Text(song.title,
               style: TextStyle(
-                color: isCurrent ? song.themeColor : Colors.white,
-                fontWeight: FontWeight.w600, fontSize: 14,
-              ),
+                  color: isCurrent ? song.themeColor : Colors.white,
+                  fontWeight: FontWeight.w600, fontSize: 14),
               maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text('${song.artist} • ${song.genre}',
               style: const TextStyle(color: RColors.textSecondary, fontSize: 12)),
-          trailing: isCurrent && music.isPlaying
-              ? Icon(Icons.pause_circle, color: song.themeColor, size: 32)
-              : const Icon(Icons.play_circle_outline, color: RColors.textMuted, size: 32),
+          // ── › forward arrow ──────────────────────────
+          trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+            isCurrent && music.isPlaying
+                ? Icon(Icons.pause_circle, color: song.themeColor, size: 32)
+                : const Icon(Icons.play_circle_outline,
+                    color: RColors.textMuted, size: 32),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, color: Colors.white24, size: 18),
+          ]),
           onTap: () async {
             await music.playSong(song);
             if (context.mounted) Navigator.pushNamed(context, '/nowplaying');
@@ -137,62 +126,65 @@ class DashboardHomeTab extends StatelessWidget {
 
   Widget _buildLastSession(BuildContext context, MusicService music) {
     final last = music.currentSong ?? music.songs.first;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: RColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: RColors.red.withOpacity(0.3)),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.history, color: RColors.red, size: 18),
-          const SizedBox(width: 6),
-          const Text('Last Session',
-              style: TextStyle(color: RColors.textPrimary, fontSize: 14,
-                  fontWeight: FontWeight.w700)),
-          const Spacer(),
-          const Text('Tap Resume to continue',
-              style: TextStyle(color: RColors.textMuted, fontSize: 11)),
-        ]),
-        const SizedBox(height: 10),
-        Row(children: [
-          Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(
-              color: last.themeColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: () async {
+        await music.playSong(last);
+        if (context.mounted) Navigator.pushNamed(context, '/nowplaying');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: RColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: RColors.red.withOpacity(0.3)),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.history, color: RColors.red, size: 18),
+            const SizedBox(width: 6),
+            const Text('Last Session', style: TextStyle(
+                color: RColors.textPrimary, fontSize: 14,
+                fontWeight: FontWeight.w700)),
+            const Spacer(),
+            const Text('Tap Resume to continue',
+                style: TextStyle(color: RColors.textMuted, fontSize: 11)),
+          ]),
+          const SizedBox(height: 10),
+          Row(children: [
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                  color: last.themeColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Icon(Icons.music_note, color: last.themeColor, size: 22),
             ),
-            child: Icon(Icons.music_note, color: last.themeColor, size: 22),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(last.title,
-                  style: const TextStyle(color: RColors.textPrimary, fontSize: 13,
-                      fontWeight: FontWeight.w600),
+            const SizedBox(width: 10),
+            Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(last.title, style: const TextStyle(
+                  color: RColors.textPrimary, fontSize: 13,
+                  fontWeight: FontWeight.w600),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               Text('${last.artist} • ${last.genre}',
-                  style: const TextStyle(color: RColors.textSecondary, fontSize: 11)),
-            ]),
-          ),
-          GestureDetector(
-            onTap: () async {
-              await music.playSong(last);
-              if (context.mounted) Navigator.pushNamed(context, '/nowplaying');
-            },
-            child: Container(
+                  style: const TextStyle(
+                      color: RColors.textSecondary, fontSize: 11)),
+            ])),
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                  color: RColors.red, borderRadius: BorderRadius.circular(20)),
-              child: const Text('Resume',
-                  style: TextStyle(color: Colors.white, fontSize: 12,
-                      fontWeight: FontWeight.w700)),
+                  color: RColors.red,
+                  borderRadius: BorderRadius.circular(20)),
+              child: const Text('Resume', style: TextStyle(
+                  color: Colors.white, fontSize: 12,
+                  fontWeight: FontWeight.w700)),
             ),
-          ),
+            const SizedBox(width: 6),
+            // › forward arrow
+            const Icon(Icons.chevron_right, color: Colors.white38, size: 20),
+          ]),
         ]),
-      ]),
+      ),
     );
   }
 
@@ -208,9 +200,9 @@ class DashboardHomeTab extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-        child: Text(_greeting,
-            style: const TextStyle(color: RColors.textPrimary,
-                fontSize: 22, fontWeight: FontWeight.w900)),
+        child: Text(_greeting, style: const TextStyle(
+            color: RColors.textPrimary, fontSize: 22,
+            fontWeight: FontWeight.w900)),
       ),
       GridView.builder(
         shrinkWrap: true,
@@ -226,7 +218,8 @@ class DashboardHomeTab extends StatelessWidget {
             onTap: () => Navigator.pushNamed(context, '/nowplaying'),
             child: Container(
               decoration: BoxDecoration(
-                  color: RColors.elevated, borderRadius: BorderRadius.circular(4)),
+                  color: RColors.elevated,
+                  borderRadius: BorderRadius.circular(4)),
               child: Row(children: [
                 Container(
                   width: 48, height: 48,
@@ -240,12 +233,14 @@ class DashboardHomeTab extends StatelessWidget {
                   child: Icon(item.$2, color: Colors.white, size: 22),
                 ),
                 const SizedBox(width: 10),
-                Expanded(
-                  child: Text(item.$1,
-                      style: const TextStyle(color: RColors.textPrimary,
-                          fontWeight: FontWeight.w700, fontSize: 13),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
+                Expanded(child: Text(item.$1, style: const TextStyle(
+                    color: RColors.textPrimary, fontWeight: FontWeight.w700,
+                    fontSize: 13),
+                    maxLines: 1, overflow: TextOverflow.ellipsis)),
+                // › forward arrow
+                const Icon(Icons.chevron_right,
+                    color: Colors.white24, size: 16),
+                const SizedBox(width: 4),
               ]),
             ),
           );
@@ -271,11 +266,9 @@ class DashboardHomeTab extends StatelessWidget {
           ),
         ),
         child: Stack(children: [
-          Positioned(
-            right: -10, top: -10,
+          Positioned(right: -10, top: -10,
             child: Icon(Icons.music_note, size: 160,
-                color: Colors.white.withOpacity(0.05)),
-          ),
+                color: Colors.white.withOpacity(0.05))),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -284,34 +277,40 @@ class DashboardHomeTab extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                      color: RColors.red, borderRadius: BorderRadius.circular(4)),
-                  child: const Text('FEATURED',
-                      style: TextStyle(color: Colors.white, fontSize: 10,
-                          fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+                  decoration: BoxDecoration(color: RColors.red,
+                      borderRadius: BorderRadius.circular(4)),
+                  child: const Text('FEATURED', style: TextStyle(
+                      color: Colors.white, fontSize: 10,
+                      fontWeight: FontWeight.w800, letterSpacing: 1.5)),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  music.songs.isNotEmpty ? music.songs.first.title : "Today's Top Hits",
-                  style: const TextStyle(color: Colors.white, fontSize: 22,
-                      fontWeight: FontWeight.w900),
-                ),
+                  music.songs.isNotEmpty
+                      ? music.songs.first.title : "Today's Top Hits",
+                  style: const TextStyle(color: Colors.white,
+                      fontSize: 22, fontWeight: FontWeight.w900)),
                 Text(
-                  music.songs.isNotEmpty ? music.songs.first.artist : 'The hottest tracks right now',
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                ),
+                  music.songs.isNotEmpty
+                      ? music.songs.first.artist : 'The hottest tracks right now',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
                 const SizedBox(height: 12),
                 Row(children: [
                   Container(
                     width: 40, height: 40,
                     decoration: const BoxDecoration(
                         color: Colors.white, shape: BoxShape.circle),
-                    child: const Icon(Icons.play_arrow, color: Colors.black, size: 24),
+                    child: const Icon(Icons.play_arrow,
+                        color: Colors.black, size: 24),
                   ),
                   const SizedBox(width: 14),
                   const Icon(Icons.shuffle, color: Colors.white70, size: 20),
                   const SizedBox(width: 14),
-                  const Icon(Icons.favorite_border, color: Colors.white70, size: 20),
+                  const Icon(Icons.favorite_border,
+                      color: Colors.white70, size: 20),
+                  const Spacer(),
+                  // › forward arrow on featured banner
+                  const Icon(Icons.arrow_forward_ios,
+                      color: Colors.white38, size: 16),
                 ]),
               ],
             ),
@@ -340,19 +339,30 @@ class DashboardHomeTab extends StatelessWidget {
           return GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/nowplaying'),
             child: Container(
-              width: 108,
-              margin: const EdgeInsets.only(right: 12),
+              width: 108, margin: const EdgeInsets.only(right: 12),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Container(
-                  height: 108, width: 108,
-                  decoration: BoxDecoration(
-                      color: item.$3, borderRadius: BorderRadius.circular(8)),
-                  child: Icon(item.$2, color: Colors.white.withOpacity(0.8), size: 38),
-                ),
+                Stack(children: [
+                  Container(
+                    height: 108, width: 108,
+                    decoration: BoxDecoration(
+                        color: item.$3, borderRadius: BorderRadius.circular(8)),
+                    child: Icon(item.$2,
+                        color: Colors.white.withOpacity(0.8), size: 38),
+                  ),
+                  // › arrow overlay on card
+                  Positioned(right: 6, bottom: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                          color: Colors.black45, shape: BoxShape.circle),
+                      child: const Icon(Icons.arrow_forward_ios,
+                          color: Colors.white70, size: 10),
+                    )),
+                ]),
                 const SizedBox(height: 6),
-                Text(item.$1,
-                    style: const TextStyle(color: RColors.textPrimary,
-                        fontSize: 12, fontWeight: FontWeight.w600),
+                Text(item.$1, style: const TextStyle(
+                    color: RColors.textPrimary, fontSize: 12,
+                    fontWeight: FontWeight.w600),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               ]),
             ),
@@ -380,30 +390,39 @@ class DashboardHomeTab extends StatelessWidget {
           return GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/nowplaying'),
             child: Container(
-              width: 148,
-              margin: const EdgeInsets.only(right: 14),
+              width: 148, margin: const EdgeInsets.only(right: 14),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Container(
-                  height: 148, width: 148,
-                  decoration: BoxDecoration(
-                    color: mix.$3,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [BoxShadow(
-                        color: mix.$3.withOpacity(0.4),
-                        blurRadius: 12, offset: const Offset(0, 6))],
+                Stack(children: [
+                  Container(
+                    height: 148, width: 148,
+                    decoration: BoxDecoration(
+                      color: mix.$3, borderRadius: BorderRadius.circular(8),
+                      boxShadow: [BoxShadow(
+                          color: mix.$3.withOpacity(0.4),
+                          blurRadius: 12, offset: const Offset(0, 6))],
+                    ),
+                    child: Stack(children: [
+                      Center(child: Icon(Icons.headphones,
+                          color: Colors.white.withOpacity(0.3), size: 56)),
+                      Positioned(bottom: 10, left: 10,
+                          child: Text(mix.$1, style: const TextStyle(
+                              color: Colors.white, fontSize: 13,
+                              fontWeight: FontWeight.w800))),
+                    ]),
                   ),
-                  child: Stack(children: [
-                    Center(child: Icon(Icons.headphones,
-                        color: Colors.white.withOpacity(0.3), size: 56)),
-                    Positioned(bottom: 10, left: 10,
-                        child: Text(mix.$1,
-                            style: const TextStyle(color: Colors.white,
-                                fontSize: 13, fontWeight: FontWeight.w800))),
-                  ]),
-                ),
+                  // › arrow overlay
+                  Positioned(right: 8, top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                          color: Colors.black38, shape: BoxShape.circle),
+                      child: const Icon(Icons.arrow_forward_ios,
+                          color: Colors.white70, size: 10),
+                    )),
+                ]),
                 const SizedBox(height: 6),
-                Text(mix.$2,
-                    style: const TextStyle(color: RColors.textSecondary, fontSize: 12),
+                Text(mix.$2, style: const TextStyle(
+                    color: RColors.textSecondary, fontSize: 12),
                     maxLines: 2, overflow: TextOverflow.ellipsis),
               ]),
             ),
@@ -428,39 +447,40 @@ class DashboardHomeTab extends StatelessWidget {
           Container(
             width: 46, height: 46,
             decoration: BoxDecoration(
-              color: colors[i].withOpacity(0.15),
-              borderRadius: BorderRadius.circular(6),
-            ),
+                color: colors[i].withOpacity(0.15),
+                borderRadius: BorderRadius.circular(6)),
             child: Icon(Icons.music_note, color: colors[i], size: 22),
           ),
           Positioned(bottom: 0, right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(color: RColors.bg, shape: BoxShape.circle),
-                child: Text('${i + 1}',
-                    style: TextStyle(color: colors[i], fontSize: 9,
-                        fontWeight: FontWeight.w900)),
-              )),
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
+                  color: RColors.bg, shape: BoxShape.circle),
+              child: Text('${i + 1}', style: TextStyle(
+                  color: colors[i], fontSize: 9, fontWeight: FontWeight.w900)),
+            )),
         ]),
-        title: Text('Song Title ${i + 1}',
-            style: const TextStyle(color: RColors.textPrimary,
-                fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Text('Artist ${i + 1} • ${3 + i}:${(20 + i * 7).toString().padLeft(2, '0')}',
-            style: const TextStyle(color: RColors.textSecondary, fontSize: 12)),
+        title: Text('Song Title ${i + 1}', style: const TextStyle(
+            color: RColors.textPrimary, fontWeight: FontWeight.w600,
+            fontSize: 14)),
+        subtitle: Text(
+            'Artist ${i + 1} • ${3 + i}:${(20 + i * 7).toString().padLeft(2, '0')}',
+            style: const TextStyle(
+                color: RColors.textSecondary, fontSize: 12)),
+        // ── › forward arrow ──────────────────────────
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
           if (i == 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                  color: RColors.redGlow, borderRadius: BorderRadius.circular(4)),
-              child: const Text('🔥 HOT',
-                  style: TextStyle(color: RColors.red, fontSize: 10,
-                      fontWeight: FontWeight.w800)),
+                  color: RColors.redGlow,
+                  borderRadius: BorderRadius.circular(4)),
+              child: const Text('🔥 HOT', style: TextStyle(
+                  color: RColors.red, fontSize: 10,
+                  fontWeight: FontWeight.w800)),
             ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: RColors.textMuted, size: 20),
-            onPressed: () {},
-          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
         ]),
         onTap: () => Navigator.pushNamed(context, '/nowplaying'),
       ),
@@ -485,23 +505,32 @@ class DashboardHomeTab extends StatelessWidget {
           return GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/nowplaying'),
             child: Container(
-              width: 128,
-              margin: const EdgeInsets.only(right: 14),
+              width: 128, margin: const EdgeInsets.only(right: 14),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Container(
-                  height: 128, width: 128,
-                  decoration: BoxDecoration(color: r.$3,
-                      borderRadius: BorderRadius.circular(6)),
-                  child: Center(child: Icon(Icons.album,
-                      color: Colors.white.withOpacity(0.5), size: 48)),
-                ),
+                Stack(children: [
+                  Container(
+                    height: 128, width: 128,
+                    decoration: BoxDecoration(
+                        color: r.$3, borderRadius: BorderRadius.circular(6)),
+                    child: Center(child: Icon(Icons.album,
+                        color: Colors.white.withOpacity(0.5), size: 48)),
+                  ),
+                  Positioned(right: 8, bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                          color: Colors.black45, shape: BoxShape.circle),
+                      child: const Icon(Icons.arrow_forward_ios,
+                          color: Colors.white70, size: 10),
+                    )),
+                ]),
                 const SizedBox(height: 6),
-                Text(r.$1,
-                    style: const TextStyle(color: RColors.textPrimary,
-                        fontSize: 13, fontWeight: FontWeight.w700),
+                Text(r.$1, style: const TextStyle(
+                    color: RColors.textPrimary, fontSize: 13,
+                    fontWeight: FontWeight.w700),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(r.$2,
-                    style: const TextStyle(color: RColors.textSecondary, fontSize: 11),
+                Text(r.$2, style: const TextStyle(
+                    color: RColors.textSecondary, fontSize: 11),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
               ]),
             ),

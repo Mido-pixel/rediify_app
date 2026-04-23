@@ -1,36 +1,23 @@
 // app_shell.dart
-// ─────────────────────────────────────────────────────────────
-// Shared scaffold that wraps every main screen with a consistent
-// Spotify-inspired bottom navigation bar + mini-player.
-//
-// Usage:
-//   Navigator.pushReplacementNamed(context, '/dashboard');
-// or embed directly:
-//   AppShell(initialIndex: 2)  // opens Library tab
-// ─────────────────────────────────────────────────────────────
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/music_service.dart';
 
-// Tab screens — import your real screen widgets here
 import 'dashboard_screen.dart'  show DashboardHomeTab;
-import 'library_screen.dart'    show LibraryScreen;
+import 'library_screen.dart'    show LibraryBody;      // ✅ LibraryBody, NOT LibraryScreen
 import 'search_screen.dart'     show SearchScreen;
 import 'premium_tab.dart'       show PremiumTab;
 import 'profile_screen.dart'    show ProfileScreen;
 
-// ── Brand colours (matches dashboard_screen.dart RColors) ────
 class _C {
-  static const bg       = Color(0xFF121212);
-  static const surface  = Color(0xFF1A1A1A);
-  static const red      = Color(0xFFE8173A);
-  static const muted    = Color(0xFF535353);
-  static const text     = Color(0xFFFFFFFF);
-  static const sub      = Color(0xFFB3B3B3);
+  static const bg      = Color(0xFF121212);
+  static const surface = Color(0xFF1A1A1A);
+  static const red     = Color(0xFFE8173A);
+  static const muted   = Color(0xFF535353);
+  static const text    = Color(0xFFFFFFFF);
+  static const sub     = Color(0xFFB3B3B3);
 }
 
-// ── AppShell ─────────────────────────────────────────────────
 class AppShell extends StatefulWidget {
   final int initialIndex;
   const AppShell({super.key, this.initialIndex = 0});
@@ -42,16 +29,14 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   late int _index;
 
-  // Tabs: Home | Search | Library | Premium | Profile
   static const _tabs = [
-    _TabMeta(icon: Icons.home_outlined,              activeIcon: Icons.home,             label: 'Home'),
-    _TabMeta(icon: Icons.search_outlined,            activeIcon: Icons.search,           label: 'Search'),
-    _TabMeta(icon: Icons.library_music_outlined,     activeIcon: Icons.library_music,    label: 'Library'),
-    _TabMeta(icon: Icons.workspace_premium_outlined, activeIcon: Icons.workspace_premium,label: 'Premium'),
-    _TabMeta(icon: Icons.person_outline,             activeIcon: Icons.person,           label: 'Profile'),
+    _TabMeta(icon: Icons.home_outlined,              activeIcon: Icons.home,              label: 'Home'),
+    _TabMeta(icon: Icons.search_outlined,            activeIcon: Icons.search,            label: 'Search'),
+    _TabMeta(icon: Icons.library_music_outlined,     activeIcon: Icons.library_music,     label: 'Library'),
+    _TabMeta(icon: Icons.workspace_premium_outlined, activeIcon: Icons.workspace_premium, label: 'Premium'),
+    _TabMeta(icon: Icons.person_outline,             activeIcon: Icons.person,            label: 'Profile'),
   ];
 
-  // Keep screen widgets alive using IndexedStack
   late final List<Widget> _screens;
 
   @override
@@ -61,17 +46,24 @@ class _AppShellState extends State<AppShell> {
     _screens = const [
       DashboardHomeTab(),   // 0 — Home
       SearchScreen(),       // 1 — Search
-      LibraryScreen(),      // 2 — Library
+      LibraryBody(),        // 2 — Library ✅ no more infinite loop
       PremiumTab(),         // 3 — Premium
       ProfileScreen(),      // 4 — Profile
     ];
+  }
+
+  void _goNext() {
+    if (_index < _tabs.length - 1) setState(() => _index++);
+  }
+
+  void _goPrev() {
+    if (_index > 0) setState(() => _index--);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _C.bg,
-      // ── App bar ─────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: _C.bg,
         elevation: 0,
@@ -79,13 +71,11 @@ class _AppShellState extends State<AppShell> {
         titleSpacing: 14,
         title: _REdiifyLogo(),
         actions: [
-          // Notifications
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: _C.text, size: 24),
             tooltip: 'Notifications',
             onPressed: () => Navigator.pushNamed(context, '/notifications'),
           ),
-          // Settings
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: _C.sub, size: 22),
             tooltip: 'Settings',
@@ -94,198 +84,209 @@ class _AppShellState extends State<AppShell> {
           const SizedBox(width: 4),
         ],
       ),
-
-      // ── Screen body ──────────────────────────────────────
-      body: IndexedStack(
-        index: _index,
-        children: _screens,
-      ),
-
-      // ── Mini player sits above bottom nav ────────────────
+      body: IndexedStack(index: _index, children: _screens),
       bottomSheet: const _MiniPlayer(),
-
-      // ── Bottom navigation bar ─────────────────────────────
       bottomNavigationBar: _BottomNav(
         currentIndex: _index,
         tabs: _tabs,
         onTap: (i) => setState(() => _index = i),
+        onPrev: _index > 0 ? _goPrev : null,
+        onNext: _index < _tabs.length - 1 ? _goNext : null,
       ),
     );
   }
 }
 
-// ── REdiify Logo widget ───────────────────────────────────────
+// ── REdiify Logo ──────────────────────────────────────────────
 class _REdiifyLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // App icon — dark circle with R + red dot
         Container(
           width: 34, height: 34,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: const Color(0xFF1A1A1A),
             border: Border.all(color: _C.red.withOpacity(0.6), width: 1.5),
-            boxShadow: [
-              BoxShadow(color: _C.red.withOpacity(0.25), blurRadius: 8),
-            ],
+            boxShadow: [BoxShadow(color: _C.red.withOpacity(0.25), blurRadius: 8)],
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Soundwave arcs behind the R
-              CustomPaint(painter: _SoundArcPainter(), size: const Size(28, 28)),
-              // Bold R letterform
-              const Text(
-                'R',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                ),
-              ),
-              // Red accent dot bottom-right
-              Positioned(
-                right: 4, bottom: 4,
-                child: Container(
-                  width: 6, height: 6,
-                  decoration: const BoxDecoration(
-                    color: _C.red, shape: BoxShape.circle,
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/REdiify.png',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Stack(
+                alignment: Alignment.center,
+                children: [
+                  CustomPaint(painter: _SoundArcPainter(), size: const Size(28, 28)),
+                  const Text('R', style: TextStyle(
+                      color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900)),
+                  Positioned(
+                    right: 4, bottom: 4,
+                    child: Container(width: 6, height: 6,
+                        decoration: const BoxDecoration(
+                            color: _C.red, shape: BoxShape.circle)),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         const SizedBox(width: 8),
-        RichText(
-          text: const TextSpan(children: [
-            TextSpan(
-              text: 'RE',
-              style: TextStyle(color: _C.red, fontSize: 19, fontWeight: FontWeight.w900),
-            ),
-            TextSpan(
-              text: 'diify',
-              style: TextStyle(color: _C.text, fontSize: 19, fontWeight: FontWeight.w900),
-            ),
-          ]),
-        ),
+        RichText(text: const TextSpan(children: [
+          TextSpan(text: 'RE',    style: TextStyle(color: _C.red,  fontSize: 19, fontWeight: FontWeight.w900)),
+          TextSpan(text: 'diify', style: TextStyle(color: _C.text, fontSize: 19, fontWeight: FontWeight.w900)),
+        ])),
       ],
     );
   }
 }
 
-// ── Sound arc painter for app icon ───────────────────────────
 class _SoundArcPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = _C.red.withOpacity(0.45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
-
     final cx = size.width / 2;
     final cy = size.height / 2;
-
-    // Three arcs emanating from centre-left
     for (final r in [6.0, 9.0, 12.0]) {
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx - 2, cy), radius: r),
-        -0.8, 1.6,
-        false,
+        -0.8, 1.6, false,
         paint..color = _C.red.withOpacity(0.5 - r * 0.02),
       );
     }
   }
-
   @override
   bool shouldRepaint(_) => false;
 }
 
-// ── Bottom nav bar ────────────────────────────────────────────
+// ── Bottom nav with ‹ › arrows ────────────────────────────────
 class _BottomNav extends StatelessWidget {
   final int currentIndex;
   final List<_TabMeta> tabs;
   final ValueChanged<int> onTap;
+  final VoidCallback? onPrev;
+  final VoidCallback? onNext;
 
   const _BottomNav({
     required this.currentIndex,
     required this.tabs,
     required this.onTap,
+    this.onPrev,
+    this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // Extra height so mini-player doesn't overlap labels
-      padding: const EdgeInsets.only(bottom: 8),
       decoration: const BoxDecoration(
         color: _C.surface,
         border: Border(top: BorderSide(color: Color(0xFF282828), width: 1)),
       ),
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor:    _C.red,
-        unselectedItemColor:  _C.muted,
-        selectedLabelStyle:   const TextStyle(fontWeight: FontWeight.w700, fontSize: 10),
-        unselectedLabelStyle: const TextStyle(fontSize: 10),
-        type: BottomNavigationBarType.fixed,
-        items: tabs.map((t) {
-          final isSelected = tabs.indexOf(t) == currentIndex;
-          // Premium tab gets a special crown badge
-          if (t.label == 'Premium') {
-            return BottomNavigationBarItem(
-              label: t.label,
-              icon: _PremiumNavIcon(active: isSelected, active_: false),
-              activeIcon: _PremiumNavIcon(active: true, active_: true),
-            );
-          }
-          return BottomNavigationBarItem(
-            label: t.label,
-            icon: Icon(t.icon),
-            activeIcon: Icon(t.activeIcon),
-          );
-        }).toList(),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(children: [
+            // ◀ Prev arrow
+            _NavArrow(icon: Icons.chevron_left, enabled: onPrev != null, onTap: onPrev),
+
+            // Tab items
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: tabs.asMap().entries.map((e) {
+                  final i      = e.key;
+                  final tab    = e.value;
+                  final active = i == currentIndex;
+                  return GestureDetector(
+                    onTap: () => onTap(i),
+                    behavior: HitTestBehavior.opaque,
+                    child: SizedBox(
+                      width: 52,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          tab.label == 'Premium'
+                              ? _PremiumNavIcon(active: active)
+                              : Icon(
+                                  active ? tab.activeIcon : tab.icon,
+                                  color: active ? _C.red : _C.muted,
+                                  size: 24,
+                                ),
+                          const SizedBox(height: 3),
+                          Text(tab.label, style: TextStyle(
+                              color: active ? _C.red : _C.muted,
+                              fontSize: 10,
+                              fontWeight: active
+                                  ? FontWeight.w700 : FontWeight.normal)),
+                          const SizedBox(height: 3),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: active ? 18 : 0,
+                            height: 2,
+                            decoration: BoxDecoration(
+                              color: _C.red,
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            // ▶ Next arrow
+            _NavArrow(icon: Icons.chevron_right, enabled: onNext != null, onTap: onNext),
+          ]),
+        ),
       ),
     );
   }
 }
 
-// ── Premium nav icon with crown badge ────────────────────────
-class _PremiumNavIcon extends StatelessWidget {
-  final bool active;
-  final bool active_;
-  const _PremiumNavIcon({required this.active, required this.active_});
+class _NavArrow extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback? onTap;
+  const _NavArrow({required this.icon, required this.enabled, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Icon(
-          active ? Icons.workspace_premium : Icons.workspace_premium_outlined,
-          color: active ? _C.red : _C.muted,
-        ),
-        if (active)
-          Positioned(
-            top: -4, right: -4,
-            child: Container(
-              width: 8, height: 8,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFD700), // gold
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-      ],
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 36,
+        alignment: Alignment.center,
+        child: Icon(icon,
+            color: enabled ? _C.text : _C.muted.withOpacity(0.3),
+            size: 26),
+      ),
     );
+  }
+}
+
+class _PremiumNavIcon extends StatelessWidget {
+  final bool active;
+  const _PremiumNavIcon({required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(clipBehavior: Clip.none, children: [
+      Icon(active ? Icons.workspace_premium : Icons.workspace_premium_outlined,
+          color: active ? _C.red : _C.muted, size: 24),
+      if (active)
+        Positioned(top: -4, right: -4,
+          child: Container(width: 8, height: 8,
+              decoration: const BoxDecoration(
+                  color: Color(0xFFFFD700), shape: BoxShape.circle))),
+    ]);
   }
 }
 
@@ -296,7 +297,7 @@ class _TabMeta {
   const _TabMeta({required this.icon, required this.activeIcon, required this.label});
 }
 
-// ── Mini player (wired to MusicService) ──────────────────────
+// ── Mini player ───────────────────────────────────────────────
 class _MiniPlayer extends StatelessWidget {
   const _MiniPlayer();
 
@@ -314,13 +315,11 @@ class _MiniPlayer extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF282828),
           borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 16,
-                offset: const Offset(0, -4)),
-          ],
+          boxShadow: [BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 16, offset: const Offset(0, -4))],
         ),
         child: Column(children: [
-          // Progress bar
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             child: LinearProgressIndicator(
@@ -334,7 +333,6 @@ class _MiniPlayer extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(children: [
-                // Album art placeholder
                 Container(
                   width: 40, height: 40,
                   decoration: BoxDecoration(
@@ -344,41 +342,36 @@ class _MiniPlayer extends StatelessWidget {
                   child: Icon(Icons.music_note, color: song.themeColor, size: 22),
                 ),
                 const SizedBox(width: 10),
-                // Title + artist
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(song.title,
-                          style: const TextStyle(
-                              color: _C.text, fontSize: 13, fontWeight: FontWeight.w700),
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(song.artist,
-                          style: const TextStyle(color: _C.sub, fontSize: 12),
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-                // Controls
+                Expanded(child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(song.title,
+                        style: const TextStyle(color: _C.text,
+                            fontSize: 13, fontWeight: FontWeight.w700),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(song.artist,
+                        style: const TextStyle(color: _C.sub, fontSize: 12),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                )),
                 IconButton(
-                  icon: const Icon(
-                    Icons.favorite_border,
-                    color: _C.sub, size: 22,
+                  icon: Icon(
+                    song.isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: song.isLiked ? _C.red : _C.sub, size: 22,
                   ),
                   onPressed: () => music.toggleLike(),
                 ),
                 IconButton(
-                  icon: Icon(
-                    music.isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: _C.text, size: 30,
-                  ),
+                  icon: Icon(music.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: _C.text, size: 30),
                   onPressed: () => music.togglePlayPause(),
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_next, color: _C.text, size: 26),
                   onPressed: () => music.playNext(),
                 ),
+                const Icon(Icons.keyboard_arrow_up, color: _C.muted, size: 18),
               ]),
             ),
           ),
